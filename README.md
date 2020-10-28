@@ -1,2 +1,2 @@
-# -my-arduino-mouse
+# my-arduino-mouse
 A personally design arduino mouse.
