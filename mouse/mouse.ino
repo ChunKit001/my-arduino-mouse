@@ -3,14 +3,15 @@
 #include <Mouse.h>
 #include <Keyboard.h>
 
-const int pingA0 = A0;
-const int pingA1 = A1;
-const int pingA2 = A2;
-const int pingA3 = A3;
-const int ping2 = 2;
-const int ping3 = 3;
-const int ping4 = 4;
-const int ping5 = 5;
+const int pingRockerY = A0;
+const int pingRockerX = A1;
+
+const int pingButtonBlue = 2;
+const int pingButtonGreen = 3;
+const int pingButtonRed = 4;
+
+const int pingWheelLeft = 5;
+const int pingWheelRight = 6;
 
 int responseDelay = 5;
 
@@ -38,21 +39,20 @@ Bounce debouncer2 = Bounce();
 
 
 void setup() {
-  pinMode(ping2, INPUT);
-  pinMode(ping3, INPUT);
-  pinMode(ping4, INPUT);
-  pinMode(ping5, INPUT);
-  pinMode(pingA0, INPUT);
-  pinMode(pingA1, INPUT);
-  pinMode(pingA2, INPUT);
-  pinMode(pingA3, INPUT);
+  pinMode(pingButtonBlue, INPUT);
+  pinMode(pingButtonGreen, INPUT);
+  pinMode(pingButtonRed, INPUT);
+  pinMode(pingRockerY, INPUT);
+  pinMode(pingRockerX, INPUT);
+  pinMode(pingWheelRight, INPUT);
+  pinMode(pingWheelLeft, INPUT);
   //保证复位
   while ( lastAxisY < 510 | lastAxisY > 538 | lastAxisX < 510 | lastAxisX > 538) {
-    lastAxisY = analogRead(pingA1);
-    lastAxisX = analogRead(pingA0);
+    lastAxisY = analogRead(pingRockerX);
+    lastAxisX = analogRead(pingRockerY);
   }
-  debouncer1.attach(pingA2);
-  debouncer2.attach(pingA3);
+  debouncer1.attach(pingWheelRight);
+  debouncer2.attach(pingWheelLeft);
   debouncer1.interval(20);
   debouncer2.interval(20);
   debouncer1.update();
@@ -92,7 +92,7 @@ void rollWheel() {
 
 
 void clickMouse() {
-  if (digitalRead(ping2) == LOW) {
+  if (digitalRead(pingButtonBlue) == LOW) {
     if (leftButtonStatus == false) {
       Mouse.press(MOUSE_LEFT);
       leftButtonStatus = true;
@@ -104,7 +104,7 @@ void clickMouse() {
     }
   }
 
-  if (digitalRead(ping3) == LOW) {
+  if (digitalRead(pingButtonGreen) == LOW) {
     if (middleButtonStatus == false) {
       Mouse.click(MOUSE_MIDDLE);
       middleButtonStatus = true;
@@ -113,7 +113,7 @@ void clickMouse() {
     middleButtonStatus = false;
   }
 
-  if (digitalRead(ping4) == LOW) {
+  if (digitalRead(pingButtonRed) == LOW) {
     if (rightButtonStatus == false) {
       Mouse.click(MOUSE_RIGHT);
       rightButtonStatus = true;
@@ -124,8 +124,8 @@ void clickMouse() {
 }
 
 void moveMouse() {
-  axisY = readAxis(pingA1, lastAxisY);
-  axisX = readAxis(pingA0, lastAxisX);
+  axisY = readAxis(pingRockerX, lastAxisY);
+  axisX = readAxis(pingRockerY, lastAxisX);
   if ((axisY != 0) || (axisX != 0)) {
     Mouse.move(-axisY, axisX, 0);
   }
