@@ -63,9 +63,9 @@ void setup() {
 }
 
 void loop() {
-  rollWheel();
-  clickMouse();
   moveMouse();
+  clickMouse();
+  rollWheel();
   delay(responseDelay);
 }
 
