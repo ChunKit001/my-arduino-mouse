@@ -4,9 +4,9 @@
 const int pingRockerX = A0;
 const int pingRockerY = A1;
 
-const int pingButtonBlue = 15;
-//const int pingButtonGreen = 14;
-const int pingButtonRed = 16;
+const int pingButtonLeft = 15;
+//const int pingButtonMiddle = 14;
+const int pingButtonRight = 16;
 
 const int pingWheelLeft = 2;
 const int pingWheelRight = 3;
@@ -14,10 +14,10 @@ const int pingWheelRight = 3;
 int responseDelay = 5;
 
 //摇杆 Y轴:负数是前 正数是后 X轴:负数是右 正数是左
-int axisY;
 int axisX;
-int lastAxisY;
+int axisY;
 int lastAxisX;
+int lastAxisY;
 int tempAxis;
 int distance;
 int distanceParam = 80;
@@ -28,13 +28,13 @@ boolean middleButtonStatus = false;
 boolean rightButtonStatus = false;
 
 //滚轮
-boolean A_set;
-boolean B_set;
+boolean wheelFlagA;
+boolean wheelFlagB;
 
 void setup() {
-  pinMode(pingButtonBlue, INPUT);
-//  pinMode(pingButtonGreen, INPUT);
-  pinMode(pingButtonRed, INPUT);
+  pinMode(pingButtonLeft, INPUT);
+//  pinMode(pingButtonMiddle, INPUT);
+  pinMode(pingButtonRight, INPUT);
   pinMode(pingRockerX, INPUT);
   pinMode(pingRockerY, INPUT);
   pinMode(pingWheelRight, INPUT);
@@ -59,34 +59,34 @@ void loop() {
 
 void wheelTurnUp() {
   if (digitalRead(pingWheelLeft) == HIGH) {
-    A_set = true;
-    if (!B_set) {
+    wheelFlagA = true;
+    if (!wheelFlagB) {
       Keyboard.press(KEY_PAGE_UP);
       delay(1);
       Keyboard.releaseAll();
     }
   }
   if (digitalRead(pingWheelLeft) == LOW) {
-    A_set = false;
+    wheelFlagA = false;
   }
 }
 
 void wheelTurnDown() {
   if (digitalRead(pingWheelRight) == HIGH) {
-    B_set = true;
-    if (!A_set) {
+    wheelFlagB = true;
+    if (!wheelFlagA) {
       Keyboard.press(KEY_PAGE_DOWN);
       delay(1);
       Keyboard.releaseAll();
     }
   }
   if (digitalRead(pingWheelRight) == LOW) {
-    B_set = false;
+    wheelFlagB = false;
   }
 }
 
 void clickMouse() {
-  if (digitalRead(pingButtonBlue) == LOW) {
+  if (digitalRead(pingButtonLeft) == LOW) {
     if (leftButtonStatus == false) {
       Mouse.press(MOUSE_LEFT);
       leftButtonStatus = true;
@@ -98,7 +98,7 @@ void clickMouse() {
     }
   }
 
-//  if (digitalRead(pingButtonGreen) == LOW) {
+//  if (digitalRead(pingButtonMiddle) == LOW) {
 //    if (middleButtonStatus == false) {
 //      Mouse.click(MOUSE_MIDDLE);
 //      middleButtonStatus = true;
@@ -107,7 +107,7 @@ void clickMouse() {
 //    middleButtonStatus = false;
 //  }
 
-  if (digitalRead(pingButtonRed) == LOW) {
+  if (digitalRead(pingButtonRight) == LOW) {
     if (rightButtonStatus == false) {
       Mouse.click(MOUSE_RIGHT);
       rightButtonStatus = true;
