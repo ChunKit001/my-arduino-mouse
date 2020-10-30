@@ -1,8 +1,8 @@
 #include <Mouse.h>
 #include <Keyboard.h>
 
-const int pingRockerY = A0;
-const int pingRockerX = A1;
+const int pingRockerX = A0;
+const int pingRockerY = A1;
 
 const int pingButtonBlue = 15;
 //const int pingButtonGreen = 14;
@@ -35,14 +35,14 @@ void setup() {
   pinMode(pingButtonBlue, INPUT);
 //  pinMode(pingButtonGreen, INPUT);
   pinMode(pingButtonRed, INPUT);
-  pinMode(pingRockerY, INPUT);
   pinMode(pingRockerX, INPUT);
+  pinMode(pingRockerY, INPUT);
   pinMode(pingWheelRight, INPUT);
   pinMode(pingWheelLeft, INPUT);
   //保证复位
   while ( lastAxisY < 510 | lastAxisY > 538 | lastAxisX < 510 | lastAxisX > 538) {
-    lastAxisY = analogRead(pingRockerX);
-    lastAxisX = analogRead(pingRockerY);
+    lastAxisY = analogRead(pingRockerY);
+    lastAxisX = analogRead(pingRockerX);
   }
   attachInterrupt(0, wheelTurnUp, CHANGE);
   attachInterrupt(1, wheelTurnDown, CHANGE);
@@ -118,8 +118,8 @@ void clickMouse() {
 }
 
 void moveMouse() {
-  axisY = readAxis(pingRockerX, lastAxisY);
-  axisX = readAxis(pingRockerY, lastAxisX);
+  axisY = readAxis(pingRockerY, lastAxisY);
+  axisX = readAxis(pingRockerX, lastAxisX);
   if ((axisY != 0) || (axisX != 0)) {
     Mouse.move(-axisY, axisX, 0);
   }
