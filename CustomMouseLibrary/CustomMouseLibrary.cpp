@@ -3,7 +3,6 @@
 #if defined(_USING_HID)
 
 static const uint8_t _hidReportDescriptor[] PROGMEM = {
-
     //  CustomMouseLibrary
     0x05, 0x01,       // USAGE_PAGE (Generic Desktop)  // 54
     0x09, 0x02,       // USAGE (CustomMouseLibrary)
@@ -82,7 +81,7 @@ void CustomMouseLibrary_::click(uint8_t b)
   move(0, 0, 0, 0);
 }
 
-void CustomMouseLibrary_::move(signed char x, signed char y, signed char h, signed char v)
+void CustomMouseLibrary_::move(signed char x, signed char y, signed char v, signed char h)
 {
   uint8_t m[5];
   m[0] = _buttons;

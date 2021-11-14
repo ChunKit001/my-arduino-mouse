@@ -1,159 +1,156 @@
 #include <Keyboard.h>
 #include <CustomMouseLibrary.h>
 
-
+//针脚定义
 const int pingRockerX = A0;
 const int pingRockerY = A1;
+const int pingRockerButton = 16;
 
-const int pingButtonLeft = 15;
-const int pingButtonMiddle = 14;
-const int pingButtonRight = 16;
-
-const int pingWheelLeft = 2;
-const int pingWheelRight = 3;
+const int pingButtonLeft = 4;
+const int pingButtonMiddle = 5;
+const int pingButtonRight = 6;
+const int pingWheelS1 = 3;
+const int pingWheelS2 = 2;
 const int pingWheelButton = 10;
 
-int responseDelay = 5;
+//常量 每轮循环间隔 灵敏度(越小越灵敏)
+const int responseDelay = 5;
+const int distanceParam = 80;
 
-//摇杆 Y轴:负数是前 正数是后 X轴:负数是右 正数是左
-int axisX;
-int axisY;
+//读数临时变量 摇杆 Y轴:负数是前 正数是后 X轴:负数是右 正数是左
 int lastAxisX;
 int lastAxisY;
-int tempAxis;
-int distance;
-int distanceParam = 80;
+bool wheelFlagA;
+bool wheelFlagB;
 
-//按钮
-boolean leftButtonStatus = false;
-boolean middleButtonStatus = false;
-boolean rightButtonStatus = false;
-
-//滚轮
-boolean wheelFlagA;
-boolean wheelFlagB;
-
-void setup() {
+// CustomMouseLibrary.move(0, 0, 顺上逆下, 顺右逆左); 后两个为窗口方向
+void setup()
+{
+  pinMode(pingRockerX, INPUT);
+  pinMode(pingRockerY, INPUT);
+  pinMode(pingRockerButton, INPUT);
   pinMode(pingButtonLeft, INPUT);
   pinMode(pingButtonMiddle, INPUT);
   pinMode(pingButtonRight, INPUT);
-  pinMode(pingRockerX, INPUT);
-  pinMode(pingRockerY, INPUT);
-  pinMode(pingWheelRight, INPUT);
-  pinMode(pingWheelLeft, INPUT);
+  pinMode(pingWheelS2, INPUT);
+  pinMode(pingWheelS1, INPUT);
   pinMode(pingWheelButton, INPUT);
-  //保证复位
-  while ( lastAxisY < 510 | lastAxisY > 538 | lastAxisX < 510 | lastAxisX > 538) {
+  //保证摇杆位于初始位置 当偏离值(标准应该在524左右)不大 并且多次读数均一致表示摇杆位于初始静止
+  int temp = 0;
+  while (lastAxisY < 510 || lastAxisY > 538 || lastAxisX < 510 || lastAxisX > 538)
+  {
     lastAxisY = analogRead(pingRockerY);
     lastAxisX = analogRead(pingRockerX);
+    if (temp > 10)
+    {
+      break;
+    }
+    else
+    {
+      temp++;
+    }
+    delay(responseDelay);
   }
-  attachInterrupt(0, wheelTurnUp, CHANGE);
-  attachInterrupt(1, wheelTurnDown, CHANGE);
+  //监听滚轮中断
+  attachInterrupt(digitalPinToInterrupt(pingWheelS1), wheelClockwise, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(pingWheelS2), wheelAnticlockwise, CHANGE);
   CustomMouseLibrary.begin();
   Keyboard.begin();
-  Serial.begin (9600);
 }
 
-void loop() {
-  moveMouse();
-  clickMouse();
+void loop()
+{
+  listenMouseMove();
+  listenClickButton();
   delay(responseDelay);
 }
 
-void wheelTurnUp() {
-  if (digitalRead(pingWheelButton) == LOW) {
-    if (digitalRead(pingWheelLeft) == HIGH) {
-      wheelFlagA = true;
-      if (!wheelFlagB) {
-        CustomMouseLibrary.move(0, 0, 1, 0);
-      }
-    }
-    if (digitalRead(pingWheelLeft) == LOW) {
-      wheelFlagA = false;
-    }
-  } else {
-    if (digitalRead(pingWheelLeft) == HIGH) {
-      wheelFlagA = true;
-      if (!wheelFlagB) {
-        CustomMouseLibrary.move(0, 0, 0, 1);
-      }
-    }
-    if (digitalRead(pingWheelLeft) == LOW) {
-      wheelFlagA = false;
-    }
+void sendWheel(int num)
+{
+  if (digitalRead(pingWheelButton) == HIGH)
+  {
+    CustomMouseLibrary.move(0, 0, num, 0);
+  }
+  else
+  {
+    CustomMouseLibrary.move(0, 0, 0, num);
   }
 }
 
-void wheelTurnDown() {
-  if (digitalRead(pingWheelButton) == LOW) {
-    if (digitalRead(pingWheelRight) == HIGH) {
-      wheelFlagB = true;
-      if (!wheelFlagA) {
-        CustomMouseLibrary.move(0, 0, -1, 0);
-      }
+//逆时针
+void wheelAnticlockwise()
+{
+  if (digitalRead(pingWheelS1) == HIGH)
+  {
+    wheelFlagB = true;
+    if (!wheelFlagA)
+    {
+      sendWheel(-1);
     }
-    if (digitalRead(pingWheelRight) == LOW) {
-      wheelFlagB = false;
-    }
-  } else {
-    if (digitalRead(pingWheelRight) == HIGH) {
-      wheelFlagB = true;
-      if (!wheelFlagA) {
-        CustomMouseLibrary.move(0, 0, 0, -1);
-      }
-    }
-    if (digitalRead(pingWheelRight) == LOW) {
-      wheelFlagB = false;
-    }
+  }
+  else
+  {
+    wheelFlagB = false;
   }
 }
 
-void clickMouse() {
-  if (digitalRead(pingButtonLeft) == LOW) {
-    if (leftButtonStatus == false) {
-      CustomMouseLibrary.press(CustomMouseLibrary_LEFT);
-      leftButtonStatus = true;
-    }
-  } else {
-    leftButtonStatus = false;
-    if (CustomMouseLibrary.isPressed() == true) {
-      CustomMouseLibrary.release(CustomMouseLibrary_LEFT);
+//顺时针
+void wheelClockwise()
+{
+  if (digitalRead(pingWheelS2) == HIGH)
+  {
+    wheelFlagA = true;
+    if (!wheelFlagB)
+    {
+      sendWheel(1);
     }
   }
-
-  if (digitalRead(pingButtonMiddle) == LOW) {
-    if (middleButtonStatus == false) {
-      CustomMouseLibrary.press(CustomMouseLibrary_MIDDLE);
-      middleButtonStatus = true;
-    }
-  } else {
-    middleButtonStatus = false;
-  }
-
-  if (digitalRead(pingButtonRight) == LOW) {
-    if (rightButtonStatus == false) {
-      CustomMouseLibrary.click(CustomMouseLibrary_RIGHT);
-      rightButtonStatus = true;
-    }
-  } else {
-    rightButtonStatus = false;
+  else
+  {
+    wheelFlagA = false;
   }
 }
 
-void moveMouse() {
-  axisY = readAxis(pingRockerY, lastAxisY);
-  axisX = readAxis(pingRockerX, lastAxisX);
-  if ((axisY != 0) || (axisX != 0)) {
+void sendButton(int Buttonpin, uint8_t Button)
+{
+  if (digitalRead(Buttonpin) == LOW)
+  {
+    if (!CustomMouseLibrary.isPressed(Button))
+    {
+      CustomMouseLibrary.press(Button);
+    }
+  }
+  else if (CustomMouseLibrary.isPressed(Button))
+  {
+    CustomMouseLibrary.release(Button);
+  }
+}
+
+void listenClickButton()
+{
+  sendButton(pingButtonLeft, CustomMouseLibrary_LEFT);
+  sendButton(pingButtonMiddle, CustomMouseLibrary_MIDDLE);
+  sendButton(pingButtonRight, CustomMouseLibrary_RIGHT);
+}
+
+void listenMouseMove()
+{
+  int axisY = readAxis(pingRockerY, lastAxisY);
+  int axisX = readAxis(pingRockerX, lastAxisX);
+  if (axisY != 0 || axisX != 0)
+  {
     CustomMouseLibrary.move(-axisY, axisX, 0, 0);
   }
 }
 
-int readAxis(int thisAxis, int lastAxis) {
-  tempAxis = analogRead(thisAxis);
-  distance = tempAxis - lastAxis;
-  if (distance > -2 & distance < 2) {
-    distance = 0;
+int readAxis(int pin, int lastAxis)
+{
+  int nowAxis = analogRead(pin);
+  int distance = nowAxis - lastAxis;
+    lastAxis = nowAxis;
+  if (distance > -2 & distance < 2)
+  {
+    return 0;
   }
-  lastAxis = tempAxis;
-  return distance / distanceParam ;
+  return distance / distanceParam;
 }
